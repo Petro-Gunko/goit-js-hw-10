@@ -4,36 +4,42 @@ import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 
 
+const startButton = document.querySelector('[data-start]');
+const daysDisplay = document.querySelector('[data-days]');
+const hoursDisplay = document.querySelector('[data-hours]');
+const minutesDisplay = document.querySelector('[data-minutes]');
+const secondsDisplay = document.querySelector('[data-seconds]');
+const datetimePicker = document.getElementById('datetime-picker');
+
 const options = {
     enableTime: true,
     time_24hr: true,
     defaultDate: new Date(),
     minuteIncrement: 1,
-    
     onClose(selectedDates) {
-        let userSelectedDate = selectedDates[0];
         const currentDate = new Date();
-
+        const userSelectedDate = selectedDates[0];
         if (userSelectedDate < currentDate) {
             iziToast.error({
                 title: 'Error',
                 message: 'Please choose a date in the future',
             });
-            document.querySelector('[data-start]').disabled = true;
+            startButton.disabled = true;
         } else {
-            document.querySelector('[data-start]').disabled = false;
+            startButton.disabled = false;
         }
     },
 };
 
-flatpickr('#datetime-picker', options);
+const timer = flatpickr('#datetime-picker', options);
 
-document.querySelector('[data-start]').addEventListener('click', startTimer);
+let intervalId;
+
+startButton.addEventListener('click', startTimer);
 
 function startTimer() {
     const selectedDate = flatpickr.parseDate(document.getElementById('datetime-picker').value);
     const currentDate = new Date();
-
     if (selectedDate <= currentDate) {
         iziToast.error({
             title: 'Error',
@@ -41,32 +47,29 @@ function startTimer() {
         });
         return;
     }
-
-    document.querySelector('[data-start]').disabled = true;
-    const intervalId = setInterval(updateTimer, 1000, selectedDate);
+    startButton.disabled = true;
+    timer.destroy();
+    intervalId = setInterval(updateTimer, 1000, selectedDate, intervalId);
 }
 
 function updateTimer(selectedDate, intervalId) {
     const currentDate = new Date();
     const difference = selectedDate - currentDate;
-
     if (difference <= 0) {
         clearInterval(intervalId);
         displayTimer(0, 0, 0, 0);
         return;
     }
-
     const { days, hours, minutes, seconds } = convertMs(difference);
     displayTimer(days, hours, minutes, seconds);
 }
-
-
 function displayTimer(days, hours, minutes, seconds) {
-    document.querySelector('[data-days]').textContent = addLeadingZero(days);
-    document.querySelector('[data-hours]').textContent = addLeadingZero(hours);
-    document.querySelector('[data-minutes]').textContent = addLeadingZero(minutes);
-    document.querySelector('[data-seconds]').textContent = addLeadingZero(seconds);
+    daysDisplay.textContent = addLeadingZero(days);
+    hoursDisplay.textContent = addLeadingZero(hours);
+    minutesDisplay.textContent = addLeadingZero(minutes);
+    secondsDisplay.textContent = addLeadingZero(seconds);
 }
+
 
 function addLeadingZero(value) {
     return value.toString().padStart(2, '0');
