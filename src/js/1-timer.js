@@ -40,6 +40,7 @@ startButton.addEventListener('click', startTimer);
 function startTimer() {
     const selectedDate = flatpickr.parseDate(document.getElementById('datetime-picker').value);
     const currentDate = new Date();
+    
     if (selectedDate <= currentDate) {
         iziToast.error({
             title: 'Error',
